@@ -45,6 +45,7 @@ export default function LoginForm() {
       setError("Something went wrong ❌");
     } finally {
       setLoading(false);
+      router.push("/");  // Login ke baad home page pe bhej dega
     }
   }
 
@@ -143,7 +144,7 @@ export default function LoginForm() {
           </div>
 
             {/* Google */}
-            <button   onClick={() => signIn("google")}
+            <button   onClick={() => signIn("google",{callbackUrl: "/"})}
             className="w-full flex items-center justify-center gap-2 border rounded-lg py-2 hover:bg-gray-100">
                 <img
                 src="https://www.svgrepo.com/show/475656/google-color.svg"

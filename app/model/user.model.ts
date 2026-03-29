@@ -9,6 +9,7 @@ interface IUser {
     createdAt: Date;
     image?: string;
     isOAuth?: boolean;
+    mobile?: string;
 }
 
 const userSchema = new mongoose.Schema<IUser>({
@@ -43,6 +44,11 @@ const userSchema = new mongoose.Schema<IUser>({
     type: Boolean,
     default: false
   },
+
+    mobile: {
+        type: String,
+        default: ""
+    },
 
     createdAt: {
         type: Date,

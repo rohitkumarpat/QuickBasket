@@ -2,10 +2,10 @@ import { get } from "http";
 import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 
+
 export async function proxy(req: Request) {
-      console.log("MIDDLEWARE RUNNING:", req.url);
   const {pathname} = new URL(req.url);
-const publicRoutes = [
+   const publicRoutes = [
   "/api/auth",
   "/favicon.ico",
   "/frontend/login",
@@ -24,7 +24,20 @@ if(!token) {
     loginUrl.searchParams.set("callbackUrl", req.url);
     return NextResponse.redirect(loginUrl);
 }
-return NextResponse.next();
+return NextResponse.next();     //aage bhej dega 
 
 
 }
+
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - _next (static files)
+     * - images
+     * - favicon
+     * - public files
+     */
+    "/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)",
+  ],
+};

@@ -53,6 +53,7 @@ export default function RegisterForm({ nextstep }: WelcomeProps) {
 
     } finally {
       setLoading(false);
+      router.push("/frontend/login");  // Registration ke baad login page pe bhej dega
     }
   }
 
@@ -159,7 +160,7 @@ export default function RegisterForm({ nextstep }: WelcomeProps) {
           </div>
 
           {/* Google */}
-          <button onClick={() => signIn("google")}
+          <button onClick={() => signIn("google",{ callbackUrl: "/" })}
            className="w-full flex items-center justify-center gap-2 border rounded-lg py-2 hover:bg-gray-100">
             <img
               src="https://www.svgrepo.com/show/475656/google-color.svg"

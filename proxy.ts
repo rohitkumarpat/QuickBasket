@@ -24,8 +24,24 @@ if(!token) {
     loginUrl.searchParams.set("callbackUrl", req.url);
     return NextResponse.redirect(loginUrl);
 }
-return NextResponse.next();     //aage bhej dega 
 
+const role=token.role;
+
+
+if (pathname.startsWith("/frontend/admin") && role !== "admin") {
+  return NextResponse.redirect(new URL("/frontend/unauthorized", req.url));
+}
+
+
+if (pathname.startsWith("/frontend/delivery") && role !== "deliveryboy") {
+  return NextResponse.redirect(new URL("/frontend/unauthorized", req.url));
+}
+
+if (pathname.startsWith("frontend/user") && role !== "user") {
+  return NextResponse.redirect(new URL("/frontend/unauthorized", req.url));
+}
+
+return NextResponse.next();     //aage bhej dega 
 
 }
 

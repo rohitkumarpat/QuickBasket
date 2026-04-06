@@ -12,6 +12,8 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
+import { RootState } from "../redux/store";
+import { useSelector } from "react-redux";
 
 interface IUser {
   _id?: string;
@@ -26,6 +28,8 @@ export default function Nav({ user }: { user: IUser }) {
   const [showSearch, setShowSearch] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
   const [openSidebar, setOpenSidebar] = useState(false);
+  const {cartdata}=useSelector((state:RootState)=>state.cart)
+
 
   const profileRef = useRef<HTMLDivElement>(null);
 
@@ -96,7 +100,7 @@ export default function Nav({ user }: { user: IUser }) {
           <div className="relative bg-white p-2 rounded-full">
             <ShoppingCart size={18} />
             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1 rounded-full">
-              1
+              {cartdata?.length || 0}
             </span>
           </div>}
 

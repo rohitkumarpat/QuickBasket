@@ -56,7 +56,7 @@ export default function RegisterForm({ nextstep }: WelcomeProps) {
       router.push("/frontend/login");  // Registration ke baad login page pe bhej dega
     }
   }
-
+                
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
 

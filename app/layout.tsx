@@ -5,6 +5,7 @@ import Provider from "./provider";
 import Storeprovide from "./redux/Storeprovide";
 import Usegetme from "./hook/Usegetme";
 import { Inituser } from "./Inituser";
+import CartLoader from "./Cartloader";
 
 
 const geistSans = Geist({
@@ -37,6 +38,7 @@ export default function RootLayout({
         <Storeprovide>
         <Provider>
          <Inituser />
+          <CartLoader />
         {children}
         </Provider>
         </Storeprovide>

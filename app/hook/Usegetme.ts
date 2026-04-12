@@ -15,7 +15,7 @@ function useGetMe() {
       try {
         const res = await axios.get("/api/me");
          console.log("User data fetched:", res.data);
-        dispatch(setUser(res.data));   //data ko global state me store kar dega
+        dispatch(setUser(res.data.user));   //data ko global state me store kar dega
 
       } catch (err) {
         console.error(err);

@@ -1,24 +1,51 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowLeft, MapPin, Phone, User, Home } from "lucide-react";
+import { ArrowLeft, MapPin, Phone, User, Home, LocateFixed, Search, Loader, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import MotionWrapper from "../../../component/MotionWrapper";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/store";
 import { number } from "motion";
 import dynamic from "next/dynamic";
+import { useRef } from "react";
+import axios from "axios";
+import { useMap } from "react-leaflet";
 
-const Mapview = dynamic(
-  () => import("../../../component/Mapview"),
+
+
+
+const MapContainer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.MapContainer),
   { ssr: false }
 );
+
+const TileLayer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  { ssr: false }
+);
+
+const Marker = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Marker),
+  { ssr: false }
+);
+
+const Popup = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Popup),
+  { ssr: false }
+);
+
+
+
+
+
 
 export default function CheckoutPage() {
   const cartdata = useSelector((state: RootState) => state.cart.cartdata);
   const user = useSelector((state: RootState) => state.user.user);
-
+  const markerRef = useRef<any>(null);
   const [payment, setPayment] = useState("cod");
+  const [isMounted, setIsMounted] = useState(false);
 
   const [address, setAddress] = useState({
     name: "",
@@ -28,14 +55,42 @@ export default function CheckoutPage() {
     pincode: "",
     fullAddress: "",
   });
-   
-  const [position,setposition] = useState<[number,number] | null >(null);
+
+  const [position, setposition] = useState<[number, number] | null>(null);
+
+  const [searchquery, setsearchquery] = useState("");
+  const [loader2, setloader2] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
+
+  useEffect(() => {
+    import("leaflet").then((L) => {
+      delete (L.Icon.Default.prototype as any)._getIconUrl;
+
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl:
+          "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
+        iconUrl:
+          "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
+        shadowUrl:
+          "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+      });
+    });
+  }, []);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    setMapReady(true);
+  }, []);
+
 
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-            setposition([pos.coords.latitude, pos.coords.longitude]);
+          setposition([pos.coords.latitude, pos.coords.longitude]);
         },
         (err) => {
           console.error("Error getting location:", err);
@@ -45,9 +100,9 @@ export default function CheckoutPage() {
       console.log("Geolocation is not supported by this browser.");
     }
 
-    }, []);
+  }, []);
 
-    // console.log("User's current position:", position);
+  // console.log("User's current position:", position);
 
 
   // ✅ Sync Redux → State
@@ -62,6 +117,69 @@ export default function CheckoutPage() {
   }, [user]);
 
 
+  const eventHandlers = {
+    dragend() {
+      const marker = markerRef.current;
+      if (marker != null) {
+        const latlng = marker.getLatLng();
+        setposition([latlng.lat, latlng.lng]);
+      }
+    },
+  };
+
+
+  useEffect(() => {
+    const fetchaddress = async () => {
+      if (!position) return;
+      try {
+        const res = await axios.get(`https://nominatim.openstreetmap.org/reverse?lat=${position?.[0]}&lon=${position?.[1]}&format=json`)
+        console.log("Reverse Geocoding Result:", res.data);
+        setAddress((prev) => ({
+          ...prev,
+          city: res.data.address.state_district || " ",
+          state: res.data.address.state || "",
+          pincode: res.data.address.postcode || "",
+          fullAddress: res.data.display_name || "",
+        }));
+
+      } catch (err) {
+        console.error("Error fetching address:", err);
+      }
+    }
+    fetchaddress();
+  }, [position]);
+
+
+  const handlesearch = async () => {
+    if (!searchquery) return;
+
+    setloader2(true);
+
+    const { OpenStreetMapProvider } = await import("leaflet-geosearch");
+
+    const provider = new OpenStreetMapProvider();
+    const results = await provider.search({ query: searchquery });
+
+    if (results.length > 0) {
+      setposition([results[0].y, results[0].x]);
+    } else {
+      alert("Location not found");
+    }
+
+    setloader2(false);
+  };
+
+
+  const ChangeMapView = ({ center }: { center: [number, number] }) => {
+    const map = useMap();
+
+    useEffect(() => {
+      map.setView(center, 13);
+    }, [center]);
+
+    return null;
+  };
+
 
   // ✅ SAME LOGIC AS CART
   const subtotal = cartdata.reduce(
@@ -71,6 +189,8 @@ export default function CheckoutPage() {
 
   const delivery = subtotal > 500 ? 0 : 50;
   const total = subtotal + delivery;
+
+
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
@@ -184,19 +304,81 @@ export default function CheckoutPage() {
               {/* 🔍 Search */}
               <div className="flex gap-2">
                 <input
+                  value={searchquery}
+                  onChange={(e) => setsearchquery(e.target.value)}
                   placeholder="Search city or area..."
                   className="flex-1 border p-3 rounded-lg"
                 />
-                <button className="bg-green-600 text-white px-4 rounded-lg">
-                  Search
+                <button
+                  onClick={handlesearch}
+                  className="bg-green-600 text-white px-4 rounded-lg flex items-center justify-center gap-2"
+                >
+                  {loader2 ? (
+                    <>
+                      <LoaderCircle className="animate-spin w-4 h-4" />
+                      Searching...
+                    </>
+                  ) : (
+                    "Search"
+                  )}
                 </button>
               </div>
 
               {/* 🗺 Map */}
               <div className="h-64 bg-gray-200 rounded-xl flex items-center justify-center text-gray-500">
-                <Mapview position={position} />
-              </div>
+                {!position || !isMounted || !mapReady ? (
+                  <div className="h-64 flex items-center justify-center">
+                    Loading map...
+                  </div>
+                ) : (
+                  <div className="h-64 w-full rounded-xl overflow-hidden relative">
 
+                    <MapContainer
+                      center={position}
+                      zoom={13}
+                      scrollWheelZoom={true}
+                      className="h-full w-full"
+                    >
+                      {/* ✅ KEEP CHILDREN SIMPLE (NO EXTRA CONDITION HERE) */}
+                      <TileLayer
+                        attribution="&copy; OpenStreetMap contributors"
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      />
+
+                      <ChangeMapView center={position} />
+
+                      <Marker
+                        draggable
+                        eventHandlers={eventHandlers}
+                        position={position}
+                        ref={markerRef}
+                      >
+                        <Popup>Drag me to select location 📍</Popup>
+                      </Marker>
+                    </MapContainer>
+
+                    {/* ✅ BUTTON */}
+                    <button
+                      onClick={() => {
+                        if (navigator.geolocation) {
+                          navigator.geolocation.getCurrentPosition(
+                            (pos) => {
+                              setposition([pos.coords.latitude, pos.coords.longitude]);
+                            },
+                            (err) => {
+                              console.error(err);
+                            }
+                          );
+                        }
+                      }}
+                      className="absolute bottom-4 right-1 z-1000 bg-blue-400 text-white p-3 rounded-full shadow-lg hover:bg-blue-500"
+                    >
+                      <LocateFixed size={18} />
+                    </button>
+
+                  </div>
+                )}
+              </div>
             </div>
           </MotionWrapper>
 
@@ -212,22 +394,20 @@ export default function CheckoutPage() {
 
                 <div
                   onClick={() => setPayment("online")}
-                  className={`p-3 border rounded-lg mb-3 cursor-pointer ${
-                    payment === "online"
-                      ? "border-green-500 bg-green-50"
-                      : ""
-                  }`}
+                  className={`p-3 border rounded-lg mb-3 cursor-pointer ${payment === "online"
+                    ? "border-green-500 bg-green-50"
+                    : ""
+                    }`}
                 >
                   Pay Online
                 </div>
 
                 <div
                   onClick={() => setPayment("cod")}
-                  className={`p-3 border rounded-lg cursor-pointer ${
-                    payment === "cod"
-                      ? "border-green-500 bg-green-50"
-                      : ""
-                  }`}
+                  className={`p-3 border rounded-lg cursor-pointer ${payment === "cod"
+                    ? "border-green-500 bg-green-50"
+                    : ""
+                    }`}
                 >
                   Cash on Delivery
                 </div>

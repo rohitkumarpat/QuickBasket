@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
+
 .no-scrollbar::-webkit-scrollbar {
   width: 0px;
   height: 0px;

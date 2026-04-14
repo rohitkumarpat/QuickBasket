@@ -98,7 +98,9 @@ export default function Nav({ user }: { user: IUser }) {
 
           {user.role=="user" &&
           <div className="relative bg-white p-2 rounded-full">
-            <ShoppingCart size={18} />
+            <ShoppingCart 
+            onClick={() => window.location.href = "/frontend/user/cart"}
+            size={18} />
             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1 rounded-full">
               {cartdata?.length || 0}
             </span>

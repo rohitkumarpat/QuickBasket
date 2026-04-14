@@ -11,6 +11,7 @@ import dynamic from "next/dynamic";
 import { useRef } from "react";
 import axios from "axios";
 import { useMap } from "react-leaflet";
+import { useRouter } from "next/navigation";
 
 
 
@@ -61,7 +62,7 @@ export default function CheckoutPage() {
   const [searchquery, setsearchquery] = useState("");
   const [loader2, setloader2] = useState(false);
   const [mapReady, setMapReady] = useState(false);
-
+  const router=useRouter();
   useEffect(() => {
     import("leaflet").then((L) => {
       delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -189,6 +190,79 @@ export default function CheckoutPage() {
 
   const delivery = subtotal > 500 ? 0 : 50;
   const total = subtotal + delivery;
+
+
+
+  const handlecod = async () => {
+    try {
+      const res = await axios.post("/api/user/order", {
+        userId: user?._id,
+        item: cartdata.map((item) => ({
+          groceryId: item._id,
+          name: item.name,
+          price: item.price,
+          unit: item.unit,
+          image: item.image,
+          quantity: item.quantity,
+        })),
+        totalamount: total,
+        paymentMethod: "cod",
+        address: {
+          fullName: address.name,
+          city: address.city,
+          state: address.state,
+          postalCode: address.pincode,
+          fulladdress: address.fullAddress,
+          mobile: address.phone,
+          latitude: position?.[0] || 0,
+          longitude: position?.[1] || 0,
+        },
+      });
+
+      console.log("Order Response:", res.data);
+
+    }catch(err){
+      console.error("Error placing order:", err);
+    }finally {
+      router.push("/frontend/user/order-sucess");
+    }
+  }
+
+
+  const handleonline = async () => {
+    try {
+      const res = await axios.post("/api/user/payment", {
+        userId: user?._id,
+        item: cartdata.map((item) => ({
+          groceryId: item._id,
+          name: item.name,
+          price: item.price,
+          unit: item.unit,
+          image: item.image,
+          quantity: item.quantity,
+        })),
+        totalamount: total,
+        paymentMethod: "online",
+        address: {
+          fullName: address.name,
+          city: address.city,
+          state: address.state,
+          postalCode: address.pincode,
+          fulladdress: address.fullAddress,
+          mobile: address.phone,
+          latitude: position?.[0] || 0,
+          longitude: position?.[1] || 0,
+        },
+      });
+
+      console.log("Payment Response:", res.data);
+
+      window.location.href = res.data.url;
+
+    } catch (err) {
+      console.error("Error processing payment:", err);
+    }
+  };
 
 
 
@@ -441,8 +515,18 @@ export default function CheckoutPage() {
               </div>
 
               {/* Button */}
-              <button className="w-full bg-green-600 text-white py-4 rounded-full text-lg font-semibold hover:bg-green-700 transition">
-                Place Order
+
+              <button 
+              onClick={()=>{
+                if(payment==="cod") {
+                  handlecod();
+                }else {
+                  handleonline();
+                }
+              }}
+              
+              className="w-full bg-green-600 text-white py-4 rounded-full text-lg font-semibold hover:bg-green-700 transition">
+                {payment === "cod" ? "Place Order" : "Pay and Place Order"}
               </button>
 
               <p className="text-xs text-gray-500 text-center">

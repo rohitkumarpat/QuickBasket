@@ -13,6 +13,7 @@ interface Order {
             quantity: number;
         }
     ]
+    ispaid: boolean;
     totalamount: number;
     paymentMethod: "cod"|"online";
     address:{
@@ -45,6 +46,10 @@ interface Order {
                     quantity: { type: Number, required: true },
                 },
             ],
+            ispaid: 
+            { 
+                type: Boolean, default: false 
+            },
             totalamount: { type: Number, required: true },
             paymentMethod: { type: String, enum: ["cod", "online"], required: true },
             address: {

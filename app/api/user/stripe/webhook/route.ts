@@ -4,7 +4,7 @@ import { connect } from "http2";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_WEBHOOK_SECRET!);
+const stripe = new Stripe(process.env.Secret_key!);
 
 
 export async function POST(req: NextRequest) {
@@ -21,13 +21,22 @@ export async function POST(req: NextRequest) {
 
   if(event.type==="checkout.session.completed"){
     const session=event.data.object as Stripe.Checkout.Session;
+
+      //  console.log("ORDER ID:", session.metadata?.orderId);
+       
     await connectToDatabase();
-    await Order.findByIdAndUpdate(session.metadata?.orderId,{
+   const orderdetail= await Order.findByIdAndUpdate(session.metadata?.orderId,{
          ispaid:true,
     });
+ 
+   //  console.log("orderdetail is ",orderdetail)
+    
 
      return NextResponse.json({message:"Payment successful and order updated"}, {status:200
     });
+
   } 
+
+   return NextResponse.json({ received: true });
 
 }

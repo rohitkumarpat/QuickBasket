@@ -164,7 +164,9 @@ export default function Nav({ user }: { user: IUser }) {
                 </div>
 
                 {user.role=="user" &&
-                <button className="w-full flex items-center gap-2 text-sm py-2 hover:bg-gray-100 rounded px-2">
+                <button
+                 onClick={() => window.location.href = "/frontend/user/my-order"}
+                className="w-full flex items-center gap-2 text-sm py-2 hover:bg-gray-100 rounded px-2">
                   <Package size={16} />
                   My Orders
                 </button> }

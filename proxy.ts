@@ -47,13 +47,6 @@ return NextResponse.next();     //aage bhej dega
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next (static files)
-     * - images
-     * - favicon
-     * - public files
-     */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)",
   ],
 };

@@ -125,7 +125,7 @@ export default function Nav({ user }: { user: IUser }) {
             </Link>
 
             <Link
-              href="/frontend/admin/manage-orders"
+              href="/frontend/admin/manage-order"
               className="bg-white text-green-700 px-4 py-1.5 rounded-full text-sm font-medium shadow-sm hover:bg-gray-200 transition"
             >
               📦 Manage Orders

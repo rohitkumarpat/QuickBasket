@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Upload, PlusCircle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import axios from "axios";
+import MotionWrapper from "@/app/component/MotionWrapper";
 
 const categories = [
   "fruits",
@@ -137,6 +138,7 @@ export default function AddGroceryPage() {
   };
 
   return (
+    <MotionWrapper>
     <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50">
 
       {/* BACK BUTTON */}
@@ -303,5 +305,6 @@ export default function AddGroceryPage() {
         </form>
       </div>
     </div>
+    </MotionWrapper>
   );
 }

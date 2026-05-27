@@ -5,7 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Leaf, Truck, Smartphone } from "lucide-react";
 
 export default function HerSection() {
-  const slides = [  
+
+  
+  const slides = [
     {
       id: 1,
       icon: <Leaf className="w-16 h-16 text-green-400" />,
@@ -37,7 +39,8 @@ export default function HerSection() {
 
   const [current, setCurrent] = useState(0);
 
-  
+
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % slides.length);
@@ -45,11 +48,11 @@ export default function HerSection() {
 
     return () => clearInterval(timer);
   }, []);
-  
+
+
 
   return (
     <div className="relative w-full h-[80vh] ">
-      
       <AnimatePresence mode="wait">
         <motion.div
           key={slides[current].id}
@@ -59,19 +62,15 @@ export default function HerSection() {
           transition={{ duration: 0.8 }}
           className="absolute w-full h-full"
         >
-          {/* Background Image */}
           <div
             className="w-full h-full bg-cover bg-center"
             style={{
               backgroundImage: `url(${slides[current].bg})`,
             }}
           >
-            {/* Overlay */}
             <div className="w-full h-full bg-black/50 flex items-center justify-center px-4">
-              
-              {/* Content */}
               <div className="text-center text-white max-w-2xl">
-                
+
                 <div className="flex justify-center mb-4">
                   {slides[current].icon}
                 </div>
@@ -87,13 +86,13 @@ export default function HerSection() {
                 <button className="bg-green-500 hover:bg-green-600 px-6 py-3 rounded-full font-semibold">
                   {slides[current].btnText}
                 </button>
+
               </div>
             </div>
           </div>
         </motion.div>
       </AnimatePresence>
 
-      {/* 🔘 Dots Navigation */}
       <div className="absolute bottom-5 w-full flex justify-center gap-2">
         {slides.map((_, index) => (
           <button

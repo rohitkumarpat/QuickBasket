@@ -8,6 +8,7 @@ import Nav from "./component/Nav";
 import Userdashboard from "./component/Userdashboard";
 import Admindashboard from "./component/Admindashboard";
 import Delivery from "./component/Delivery";
+import Geoupdater from "./component/Geoupdater";
 
 
 export default async function Home() {
@@ -42,6 +43,8 @@ export default async function Home() {
     <div>
       <Nav user={user} />
 
+      <Geoupdater userId={user._id} />
+       
       {user.role === "user" && <Userdashboard />}
 
       {user.role === "deliveryboy" && <Delivery />}

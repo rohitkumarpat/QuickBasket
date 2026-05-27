@@ -1,9 +1,43 @@
 import React, { useState } from "react";
 import { IOrder } from "../frontend/admin/manage-order/page";
 import { motion, AnimatePresence } from "framer-motion";
+import axios from "axios";
+
+type OrderStatus =
+  | "pending"
+  | "out-for-delivery"
+  | "delivered"
+  | "cancelled";
+
 
 function Adminordercard({ order }: { order: IOrder }) {
   const [open, setOpen] = useState(false);
+ const [currentStatus, setCurrentStatus] = useState<OrderStatus>(order.status);
+
+  const [loading, setLoading] = useState(false);
+
+const handleChangeStatus = async (status: OrderStatus) => {
+  try {
+    setLoading(true);
+    setCurrentStatus(status);
+    const response = await axios.post(
+      `/api/admin/update-order-status/${order.id}`,
+      {
+        status,
+      }
+    );
+
+   console.log(response.data);
+
+  } catch (error: any) {
+    console.log(error);
+    setCurrentStatus(order.status);
+
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="bg-white rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.08)] p-5 flex justify-between items-start mb-5 hover:shadow-lg transition mt-3">
@@ -113,11 +147,11 @@ function Adminordercard({ order }: { order: IOrder }) {
           <p>
             Delivery:{" "}
             <span className="text-green-600">
-              {order.status}
+              {currentStatus}
             </span>
           </p>
           <p className="font-semibold text-green-600">
-            Total: ₹{order.totalamount}
+            Total: ₹{order.totalamount} 
           </p>
         </div>
       </div>
@@ -128,21 +162,23 @@ function Adminordercard({ order }: { order: IOrder }) {
         {/* Status Badge */}
         <span
           className={`text-xs px-3 py-1 rounded-full ${
-            order.status === "pending"
+            currentStatus === "pending"
               ? "bg-yellow-100 text-yellow-700"
-              : order.status === "out-for-delivery"
+              : currentStatus === "out-for-delivery"
               ? "bg-blue-100 text-blue-700"
-              : order.status === "delivered"
+              : currentStatus === "delivered"
               ? "bg-green-100 text-green-700"
               : "bg-red-100 text-red-600"
           }`}
         >
-          {order.status}
+          {currentStatus}
         </span>
 
         {/* Dropdown */}
         <select
-          defaultValue={order.status}
+          value={currentStatus}
+          onChange={(e) => handleChangeStatus(e.target.value as OrderStatus)}
+           disabled={loading}
           className="border rounded-md px-2 py-1 text-sm"
         >
           <option value="pending">PENDING</option>

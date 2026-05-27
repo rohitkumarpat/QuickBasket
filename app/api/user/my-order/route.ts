@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
 
                 const order = await Order.find({
                 userId: new mongoose.Types.ObjectId(session.user.id),
-                }).lean();
+                }).sort({ createdAt: -1 }).lean();
 
     if (!order || order.length === 0) {
       return NextResponse.json({ message: "Order not found" }, { status: 404 });

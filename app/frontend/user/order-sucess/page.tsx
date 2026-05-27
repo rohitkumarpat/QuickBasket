@@ -81,7 +81,7 @@ export default function OrderSuccessPage() {
 
         {/* ✅ Button */}
         <button
-          onClick={() => router.push("/frontend/user/order")}
+          onClick={() => router.push("/frontend/user/my-order")}
           className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full font-medium transition duration-200"
         >
           Go to My Orders →

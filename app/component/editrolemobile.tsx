@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { User, Bike, Shield } from "lucide-react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -10,7 +10,7 @@ export default function Editrolemobile() {
   const [role, setRole] = useState("");
   const [mobile, setMobile] = useState("");
   const router=useRouter();
-
+   const [showAdmin, setShowAdmin] = useState(true);
   const isDisabled = !role || mobile.length !== 10;
 
   async function handleroleandmobile() {
@@ -27,6 +27,22 @@ export default function Editrolemobile() {
     }
   }
 
+  useEffect(() => {
+    async function checkAdmin() {
+      try {
+        const response = await axios.get("/api/check-admin");
+        if (response.data.isAdmin) {
+            setShowAdmin(false);
+        }
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+      }
+    }
+
+    checkAdmin();
+  }, []);
+
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-green-50 px-4">
       
@@ -36,6 +52,7 @@ export default function Editrolemobile() {
 
       <div className="flex gap-6 mb-8 flex-wrap justify-center">
         
+        {showAdmin && (
         <div
           onClick={() => setRole("admin")}
           className={`cursor-pointer w-40 h-32 rounded-xl flex flex-col items-center justify-center border shadow-sm 
@@ -45,6 +62,8 @@ export default function Editrolemobile() {
           <Shield size={24} />
           <p className="mt-2">Admin</p>
         </div>
+         )}
+
 
         <div
           onClick={() => setRole("user")}

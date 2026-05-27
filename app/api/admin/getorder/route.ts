@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
   try {
     await connectToDatabase();
 
-    const orders = await Order.find({}).lean();
+    const orders = await Order.find({}).sort({ createdAt: -1 }).lean();
 
     const formattedOrders = orders.map((o: any) => ({
       id: o._id.toString(),

@@ -26,6 +26,8 @@ interface Order {
         latitude: number;
         longitude: number;
     }
+      assignment?: mongoose.Types.ObjectId | null;
+    assignmentdeliveryboyId?: mongoose.Types.ObjectId | null;
     status: "pending" | "out-for-delivery" | "delivered" | "cancelled";
     createdAt?: Date;
     updatedAt?: Date;
@@ -62,6 +64,11 @@ interface Order {
                 latitude: { type: Number, required: true },
                 longitude: { type: Number, required: true },
             },
+            
+            assignment: { type: mongoose.Schema.Types.ObjectId, ref: "DeliveryAssignment", default: null },
+
+            assignmentdeliveryboyId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+
             status: { type: String, enum: ["pending", "out-for-delivery", "delivered", "cancelled"], default: "pending" },
         },
         { timestamps: true }

@@ -1,7 +1,7 @@
 "use client";
 
 import axios from "axios";
-import { use, useEffect } from "react";
+import { useEffect } from "react";
 
 import { setUser } from "../redux/userslice";
 import { useDispatch } from "react-redux";
@@ -14,16 +14,23 @@ function useGetMe() {
     async function fetchData() {
       try {
         const res = await axios.get("/api/me");
-         console.log("User data fetched:", res.data);
+        console.log("User data fetched:", res.data);
         dispatch(setUser(res.data.user));   //data ko global state me store kar dega
 
       } catch (err) {
-        console.error(err);
+        if (axios.isAxiosError(err)) {
+          console.log("status:", err.response?.status);
+          console.log("data:", err.response?.data);
+          console.log("message:", err.message);
+        } else {
+          console.error(err);
+        }
       }
+
     }
 
     fetchData();
-  },[dispatch]);
+  }, [dispatch]);
 }
 
 export default useGetMe;

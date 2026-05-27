@@ -1,9 +1,11 @@
 import { auth } from "@/app/auth";
+import connectToDatabase from "@/app/lib/db";
 import User from "@/app/model/user.model";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req:NextRequest) {
     try {
+        await connectToDatabase();
         const session=await auth();
         if(!session){
             return NextResponse.json({message:"Unauthorized"},{status:401})

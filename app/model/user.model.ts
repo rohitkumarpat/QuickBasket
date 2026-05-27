@@ -10,6 +10,22 @@ interface IUser {
     image?: string;
     isOAuth?: boolean;
     mobile?: string;
+
+    location: {
+    type: {
+        type: StringConstructor;
+        enum: string[];
+        default: string;
+    };
+    coordinates: {
+        type: NumberConstructor[];
+        default: number[];
+    };
+}
+
+socketid?: string| null;
+isonline?: boolean;
+    
 }
 
 const userSchema = new mongoose.Schema<IUser>({
@@ -53,9 +69,32 @@ const userSchema = new mongoose.Schema<IUser>({
     createdAt: {
         type: Date,
         default: Date.now
-    }
+    },
+
+    location: {
+        type:{
+            type: String,
+            enum: ['Point'],
+            default: 'Point'
+        },
+        coordinates: {
+            type: [Number],
+            default: [0, 0]
+        }
+        },
+
+        socketid: {
+            type: String,
+            default: null
+        },
+        isonline: {
+            type: Boolean,
+            default: false
+        }
+        
 });
 
+userSchema.index({ location: "2dsphere" });
 const User = mongoose.models.User || mongoose.model<IUser>("User", userSchema);
 
 export default User;

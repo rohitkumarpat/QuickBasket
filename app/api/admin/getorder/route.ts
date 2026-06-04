@@ -6,25 +6,13 @@ export async function GET(req: NextRequest) {
   try {
     await connectToDatabase();
 
-    const orders = await Order.find({}).sort({ createdAt: -1 }).lean();
+    const orders = await Order.find()
+      .populate(
+        "assignmentdeliveryboyId",
+        "name mobile"
+      ).sort({ createdAt: -1 }).lean();
 
-    const formattedOrders = orders.map((o: any) => ({
-      id: o._id.toString(),
-      userId: o.userId?.toString(),
-
-      item: o.item,
-      ispaid: o.ispaid,
-      totalamount: o.totalamount,
-      paymentMethod: o.paymentMethod,
-
-      address: o.address,
-      status: o.status,
-
-      createdAt: o.createdAt?.toISOString(),
-      updatedAt: o.updatedAt?.toISOString(),
-    }));
-
-    return NextResponse.json({ order: formattedOrders }, { status: 200 });
+    return NextResponse.json({ order: orders }, { status: 200 });
 
   } catch (error) {
     console.log(error);

@@ -1,4 +1,5 @@
 import connectToDatabase from "@/app/lib/db";
+import emiteventhandler from "@/app/lib/emiteventhandler";
 import DeliveryAssignment from "@/app/model/deliveryassignment";
 import Order from "@/app/model/order.model";
 import User from "@/app/model/user.model";
@@ -83,8 +84,11 @@ export async function POST(
 
       const candidates = availableDeliveryBoys.map((b) => b._id);
 
+
       if (candidates.length === 0) {
         await order.save();
+
+        await emiteventhandler("order-status-updated", { orderId: order._id, status: order.status });
         return NextResponse.json(
           { message: "No delivery boys available nearby", status: order.status },
           { status: 200 }
@@ -97,11 +101,31 @@ export async function POST(
         status: "broadcast",
       });
 
+      await deliveryassignment.populate("orderId");
+
+      console.log("Available boys:", availableDeliveryBoys.length);
+        console.log("assignment id:", deliveryassignment._id)
+
+      for (const boyid of candidates) {
+        const boy = await User.findById(boyid);
+        if (boy.socketid) {
+          // Emit event to the delivery boy
+          await emiteventhandler(
+            "new-delivery-assignment",
+            { 
+             assignment: deliveryassignment._id,
+              orderId: deliveryassignment.orderId,
+            },
+            boy.socketid
+          );
+        }
+      }
+
       order.assignment = deliveryassignment._id;
 
       DeliveryBoyspayload = availableDeliveryBoys.map((b) => ({
         id: b._id,
-        name: b.name,   
+        name: b.name,
         mobile: b.mobile,
         latitude: b.location.coordinates[1],
         longitude: b.location.coordinates[0],
@@ -111,6 +135,7 @@ export async function POST(
     }
 
     await order.save();
+    await emiteventhandler("order-status-updated", { orderId: order._id, status: order.status });
 
     return NextResponse.json(
       {

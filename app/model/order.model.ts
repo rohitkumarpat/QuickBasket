@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-interface Order {
+export interface Order {
     id:mongoose.Types.ObjectId;
     userId: mongoose.Types.ObjectId;
     item :[

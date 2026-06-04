@@ -1,14 +1,14 @@
 "use client"
 
 import Adminordercard from "@/app/component/Adminordercard";
+import { getsocket } from "@/app/lib/socket";
 import axios from "axios"
 import { MoveLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react"
 
 export interface IOrder {
-  id: string; 
-  userId: string;
+  _id: string;
 
   item: {
     groceryId: string;
@@ -30,15 +30,25 @@ export interface IOrder {
     postalCode: string;
     fulladdress: string;
     mobile: string;
-    latitude: number;
-    longitude: number;
   };
 
-  status: "pending" | "out-for-delivery" | "delivered" | "cancelled";
+  status:
+    | "pending"
+    | "out-for-delivery"
+    | "delivered"
+    | "cancelled";
 
-  createdAt?: string; 
-  updatedAt?: string;
+  createdAt: string;
+
+  assignmentdeliveryboyId?: {
+    _id: string;
+    name: string;
+    mobile: string;
+    image?: string;
+  };
 }
+
+
 
 
 
@@ -51,6 +61,9 @@ export default function Manageorder() {
             try {
                 const res = await axios.get("/api/admin/getorder");
                 setOrders(res.data.order || []);
+                console.log("Fetched orders:", res.data.order);
+
+
             } catch (error) {
                 console.log(error);
             }
@@ -58,6 +71,41 @@ export default function Manageorder() {
 
         fetchOrders(); 
     }, [])
+
+
+useEffect(() => {
+  const socket = getsocket();
+  socket.connect();
+
+  const handleConnect = () => {
+    console.log("Manage order socket connected:", socket.id);
+  };
+
+  const handleConnectError = (error: Error) => {
+    console.error("Manage order socket connection error:", error.message);
+  };
+
+  socket.on("connect", handleConnect);
+  socket.on("connect_error", handleConnectError);
+
+  socket.on("new-order", (neworder) => {
+    console.log("Received new order:", neworder);
+    setOrders((prevOrders) => {
+      const alreadyExists = prevOrders.some((order) => order._id === neworder._id);
+      if (alreadyExists) {
+        return prevOrders;
+      }
+
+      return [neworder, ...prevOrders];
+    });
+  });
+
+  return () => {
+    socket.off("connect", handleConnect);
+    socket.off("connect_error", handleConnectError);
+    socket.off("new-order");
+  };
+}, []);
 
     return (
         <div>
@@ -74,7 +122,7 @@ export default function Manageorder() {
 
         <div className="max-w-4xl mx-auto px-4 py-4  min-h-screen"> 
             {orders.map((order) => (
-                <Adminordercard key={order.id} order={order} />
+                <Adminordercard key={order._id} order={order} />
             ))}
              </div>
       </div>

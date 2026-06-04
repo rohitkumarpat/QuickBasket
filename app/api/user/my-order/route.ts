@@ -14,29 +14,39 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    
+
     // console.log("SESSION USER ID:", session.user.id);
     // console.log("TYPE:", typeof session.user.id);
 
-                const order = await Order.find({
-                userId: new mongoose.Types.ObjectId(session.user.id),
-                }).sort({ createdAt: -1 }).lean();
+    const order = await Order.find({
+      userId: new mongoose.Types.ObjectId(session.user.id),
+    }).populate(
+      "assignmentdeliveryboyId",
+      "name mobile"
+    ).sort({ createdAt: -1 }).lean();
 
     if (!order || order.length === 0) {
       return NextResponse.json({ message: "Order not found" }, { status: 404 });
     }
+    const formattedOrders = order.map((o: any) => ({
+      id: o._id.toString(),
+      date: o.createdAt,
+      isPaid: o.ispaid,
+      deliveryStatus: o.status,
+      total: o.totalamount,
+      address: o.address.fulladdress,
+      paymentMethod: o.paymentMethod,
+      items: o.item,
 
-            const formattedOrders = order.map((o: any) => ({
-            id: o._id.toString(),
-            date: o.createdAt,
-            isPaid: o.ispaid,             
-            deliveryStatus: o.status,     
-            total: o.totalamount,         
-            address: o.address.fulladdress, 
-            paymentMethod: o.paymentMethod,
-            items: o.item,            
-            }));
-                // console.log("ordersdetail", formattedOrders);
+      assignmentdeliveryboyId: o.assignmentdeliveryboyId
+        ? {
+          _id: o.assignmentdeliveryboyId._id,
+          name: o.assignmentdeliveryboyId.name,
+          mobile: o.assignmentdeliveryboyId.mobile,
+        }
+        : null,
+    }));
+    // console.log("ordersdetail", formattedOrders);
 
     return NextResponse.json({ order: formattedOrders }, { status: 200 });
   } catch (error) {

@@ -1,4 +1,5 @@
 import connectToDatabase from "@/app/lib/db";
+import emiteventhandler from "@/app/lib/emiteventhandler";
 import Order from "@/app/model/order.model";
 import User from "@/app/model/user.model";
 
@@ -27,6 +28,12 @@ export  async function POST(req:NextRequest){
         paymentMethod,
         address,
        });
+
+       console.log("Before emit");
+
+       await emiteventhandler("new-order",neworder);
+      
+       console.log("After emit");
 
        return NextResponse.json({ message: "Order created successfully", order: neworder }, { status: 201 });
 

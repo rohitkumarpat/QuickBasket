@@ -4,13 +4,17 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { MoveLeft } from "lucide-react";
+import { MapPinned, MoveLeft, User, Phone } from "lucide-react";
+import { getsocket } from "@/app/lib/socket";
+
 
 type OrderItem = {
+  groceryId?: string;
   name: string;
   quantity: number;
   price: number;
   image: string;
+  unit?: string;
 };
 
 type Order = {
@@ -22,6 +26,12 @@ type Order = {
   address: string;
   paymentMethod?: string;
   items: OrderItem[];
+
+  assignmentdeliveryboyId?: {
+    _id: string;
+    name: string;
+    mobile: string;
+  };
 };
 
 export default function MyOrders() {
@@ -74,7 +84,25 @@ export default function MyOrders() {
 }
 
 function OrderCard({ order }: { order: Order }) {
+
+  useEffect(() => {
+    const socket = getsocket();
+    socket.connect();
+    socket.on("order-status-updated", (data) => {
+      if (data.orderId === order.id) {
+        setCurrentStatus(data.status);
+      }
+    })
+    return () => {
+      socket.off("order-status-updated");
+    }
+  }, []);
+
+
   const [open, setOpen] = useState(true);
+  const [currentStatus, setCurrentStatus] = useState(order.deliveryStatus);
+
+
 
   return (
     <div className="rounded-xl border shadow-sm overflow-hidden">
@@ -95,7 +123,7 @@ function OrderCard({ order }: { order: Order }) {
           </span>
 
           <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-600">
-            {order.deliveryStatus}
+            {currentStatus}
           </span>
         </div>
       </div>
@@ -110,6 +138,47 @@ function OrderCard({ order }: { order: Order }) {
         </p>
 
         <p className="text-sm text-gray-600">{order.address}</p>
+
+
+        {order.assignmentdeliveryboyId && (
+          <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-100">
+
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                <User className="w-5 h-5 text-blue-600" />
+              </div>
+
+              <div>
+                <p className="text-xs text-gray-500">
+                  Delivery Partner
+                </p>
+
+                <p className="font-medium text-gray-800">
+                  {order.assignmentdeliveryboyId.name}
+                </p>
+
+                <div className="flex items-center gap-2">
+                  <Phone className="w-3 h-3 text-green-600" />
+
+                  <a
+                    href={`tel:${order.assignmentdeliveryboyId.mobile}`}
+                    className="text-xs text-gray-500 hover:text-green-600"
+                  >
+                    {order.assignmentdeliveryboyId.mobile}
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <button
+              className="flex items-center gap-2 bg-green-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-green-700">
+              <MapPinned size={16} />
+              Track
+            </button>
+          </div>
+        )}
+
+
 
         {/* TOGGLE */}
         <div
@@ -168,7 +237,7 @@ function OrderCard({ order }: { order: Order }) {
           <p>
             Delivery:{" "}
             <span className="text-green-600">
-              {order.deliveryStatus}
+              {currentStatus}
             </span>
           </p>
           <p className="font-semibold text-green-600">

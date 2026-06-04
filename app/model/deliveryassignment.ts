@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 
-interface deliveryAssignment {
+export interface deliveryAssignment {
     _id?: mongoose.Types.ObjectId;
     orderId: mongoose.Types.ObjectId,
     broadcasterId: mongoose.Types.ObjectId[],

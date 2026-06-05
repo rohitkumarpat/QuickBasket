@@ -9,7 +9,13 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { getsocket } from "@/app/lib/socket";
 
-
+interface AssignedDeliveryBoy {
+  _id: string;
+  location?: {
+    type: "Point";
+    coordinates: [number, number];
+  };
+}
 
 interface IOrder {
   _id: mongoose.Types.ObjectId;
@@ -23,7 +29,7 @@ interface IOrder {
       image: string;
       quantity: number;
     }
-  ]
+  ];
   ispaid: boolean;
   totalamount: number;
   paymentMethod: "cod" | "online";
@@ -36,46 +42,54 @@ interface IOrder {
     mobile: string;
     latitude: number;
     longitude: number;
-  }
+  };
   assignment?: mongoose.Types.ObjectId | null;
-  assignmentdeliveryboyId?: mongoose.Types.ObjectId | null;
+  assignmentdeliveryboyId?: AssignedDeliveryBoy | null;
   status: "pending" | "out-for-delivery" | "delivered" | "cancelled";
   createdAt?: Date;
   updatedAt?: Date;
-
 }
 
-const Livemap = dynamic(
-  () => import("@/app/component/Livemap"),
-  {
-    ssr: false,
-  }
-);
+const Livemap = dynamic(() => import("@/app/component/Livemap"), {
+  ssr: false,
+});
 
-export default function Trackorder({ params }: { params: Promise<{ orderid: string }> }) {
+export default function Trackorder({
+  params,
+}: {
+  params: Promise<{ orderid: string }>;
+}) {
   const { orderid } = use(params);
   const { user } = useSelector((state: RootState) => state.user);
 
   const [order, setOrder] = useState<IOrder>();
-
-  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
-  const [deliveryLocation, setDeliveryLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [location, setLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+  const [deliveryLocation, setDeliveryLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
   const router = useRouter();
+
+  const assignedDeliveryBoyId = order?.assignmentdeliveryboyId?._id ?? null;
 
   useEffect(() => {
     const fetchOrder = async () => {
       try {
         const res = await axios.get(`/api/user/get-order/${orderid}`);
-        setOrder(res.data.order);
+        const nextOrder = res.data.order as IOrder;
 
-        // console.log("rohitporevnh", res.data.order);
+        console.log("[track-order] fetched order", nextOrder);
 
+        setOrder(nextOrder);
         setLocation({
-          latitude: res.data.order.address.latitude,
-          longitude: res.data.order.address.longitude,
+          latitude: nextOrder.address.latitude,
+          longitude: nextOrder.address.longitude,
         });
 
-        const boy = res.data.order.assignmentdeliveryboyId;
+        const boy = nextOrder.assignmentdeliveryboyId;
         if (boy?.location?.coordinates) {
           setDeliveryLocation({
             longitude: boy.location.coordinates[0],
@@ -83,43 +97,75 @@ export default function Trackorder({ params }: { params: Promise<{ orderid: stri
           });
         }
       } catch (error) {
-        console.error(error);
+        console.error("[track-order] failed to fetch order", error);
       }
     };
 
     fetchOrder();
   }, [orderid]);
 
-
   useEffect(() => {
-    if (!order) return;
     const socket = getsocket();
+    socket.connect();
 
+    if (!assignedDeliveryBoyId) {
+      console.warn("[track-order] no assigned delivery boy yet");
+      return;
+    }
 
-    const handleLocationUpdate = ({ userId,latitude,longitude,}: {
-      userId: string; latitude: number; longitude: number; }) => {
-      console.log("LOCATION EVENT RECEIVED");
-        console.log("socket userId:", userId);
-           console.log(
-    "order.assignmentdeliveryboyId:",
-    order.assignmentdeliveryboyId
-          );
-
-
-      // if (userId.toString() ===String(order.assignmentdeliveryboyId)) {
-      //   setDeliveryLocation({ latitude,longitude,});
-      // }
+    const handleConnect = () => {
+      console.log("[track-order] socket connected", {
+        socketId: socket.id,
+        orderId: orderid,
+        assignedDeliveryBoyId,
+        viewerId: user?._id,
+      });
     };
 
-    socket.on(
-      "update-delivery-boy-location",
-      handleLocationUpdate
-    );
+    const handleLocationUpdate = ({
+      userId,
+      latitude,
+      longitude,
+    }: {
+      userId: string;
+      latitude: number;
+      longitude: number;
+    }) => {
+      console.log("[track-order] customer received location event", {
+        orderId: orderid,
+        assignedDeliveryBoyId,
+        userId,
+        latitude,
+        longitude,
+      });
 
-    return () => {  socket.off("update-delivery-boy-location",handleLocationUpdate); };
-  }, [user, order]);
+      if (String(userId) !== String(assignedDeliveryBoyId)) {
+        console.log("[track-order] ignored location update for another rider", {
+          expected: assignedDeliveryBoyId,
+          received: userId,
+        });
+        return;
+      }
 
+      console.log("[track-order] updating customer map state", {
+        latitude,
+        longitude,
+      });
 
+      setDeliveryLocation({
+        latitude,
+        longitude,
+      });
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("update-delivery-boy-location", handleLocationUpdate);
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("update-delivery-boy-location", handleLocationUpdate);
+    };
+  }, [assignedDeliveryBoyId, orderid, user?._id]);
 
   if (!order || !location) {
     return (
@@ -130,11 +176,9 @@ export default function Trackorder({ params }: { params: Promise<{ orderid: stri
   }
 
   return (
-    <div className="min-h-screen  py-6">
+    <div className="min-h-screen py-6">
       <div className="max-w-4xl mx-auto">
-
-        {/* Header */}
-        <div className="bg-white  px-6 py-6">
+        <div className="bg-white px-6 py-6">
           <div className="flex items-center justify-center gap-3">
             <button
               onClick={() => router.push("/frontend/user/my-order")}
@@ -143,15 +187,11 @@ export default function Trackorder({ params }: { params: Promise<{ orderid: stri
               ←
             </button>
 
-            <h1 className="text-xl font-bold text-gray-600">
-              Back
-            </h1>
+            <h1 className="text-xl font-bold text-gray-600">Back</h1>
           </div>
 
           <div className="text-center mt-6">
-            <h1 className="text-3xl font-bold text-gray-800">
-              Track Order
-            </h1>
+            <h1 className="text-3xl font-bold text-gray-800">Track Order</h1>
 
             <p className="text-lg text-gray-600 mt-2">
               Order #{String(order._id).slice(-6)}
@@ -163,7 +203,6 @@ export default function Trackorder({ params }: { params: Promise<{ orderid: stri
           </div>
         </div>
 
-        {/* Map Card */}
         <div className="flex justify-center mt-8">
           <div className="w-full max-w-3xl overflow-hidden rounded-[32px] border bg-white shadow-lg">
             <Livemap
@@ -172,7 +211,6 @@ export default function Trackorder({ params }: { params: Promise<{ orderid: stri
             />
           </div>
         </div>
-
       </div>
     </div>
   );

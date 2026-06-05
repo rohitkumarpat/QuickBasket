@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import { getsocket } from "../lib/socket";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
+import Geoupdater from "./Geoupdater";
 
 
 interface Assignment {
@@ -25,6 +26,13 @@ interface Assignment {
     status: string;
     totalamount: number;
   };
+}
+
+interface NewDeliveryAssignmentPayload {
+  assignment: {
+    _id: string;
+  };
+  orderId: Assignment["orderId"];
 }
 
 
@@ -79,7 +87,12 @@ const [deliverylocation,setdeliverylocation]=useState<{latitude:number,longitude
   
   useEffect(() => {
     const socket = getsocket();
-    socket.on("new-delivery-assignment", ({ assignment, orderId }) => {
+    socket.connect();
+
+    const handleNewDeliveryAssignment = ({
+      assignment,
+      orderId,
+    }: NewDeliveryAssignmentPayload) => {
 
       console.log("ASSIGNMENT RECEIVED", { assignment, orderId });
 
@@ -90,9 +103,13 @@ const [deliverylocation,setdeliverylocation]=useState<{latitude:number,longitude
           orderId,
         },
       ]);
-    });
+    };
 
-    return () => { socket.off("new-delivery-assignment") }
+    socket.on("new-delivery-assignment", handleNewDeliveryAssignment);
+
+    return () => {
+      socket.off("new-delivery-assignment", handleNewDeliveryAssignment);
+    };
   }, []);
 
 
@@ -160,35 +177,18 @@ const [deliverylocation,setdeliverylocation]=useState<{latitude:number,longitude
   }, [user]);
 
 
-  useEffect(() => {
-    if (!user?._id) return;
-    const socket = getsocket();
-    socket.emit("identity", user._id);
-
-    if (!navigator.geolocation) return;
-
-    const watcher = navigator.geolocation.watchPosition(
-        (position) => {
-            const { latitude, longitude } = position.coords;
-            setdeliverylocation({ latitude, longitude });
-            socket.emit("updateLocation", { userId: user._id, latitude, longitude });
-        },
-        (error) => {
-            console.error("Error getting location:", {
-                code: error.code,
-                message: error.message
-            });
-        },
-        { enableHighAccuracy: true }
-    );
-
-    return () => navigator.geolocation.clearWatch(watcher);
-}, [user?._id] );
-
-
 if (activeorder && location){
   return (
     <div className="p-4 pt-[50px] min-h-screen bg-gray-50">
+      {user?._id ? (
+        <Geoupdater
+          userId={String(user._id)}
+          onLocationChange={(nextLocation) => {
+            console.log("[delivery-dashboard] local map state updated", nextLocation);
+            setdeliverylocation(nextLocation);
+          }}
+        />
+      ) : null}
       <div className="max-w-3xl mx-auto">
         <h1 className="text-2xl font-bold text-green-700 mb-2">
           Active Delivery

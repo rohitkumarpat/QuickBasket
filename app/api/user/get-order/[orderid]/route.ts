@@ -1,8 +1,11 @@
 import connectToDatabase from "@/app/lib/db";
 import Order from "@/app/model/order.model";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: Request, { params }: { params: { orderid: string } }) {
+export async function GET(
+    request: NextRequest,
+    { params }: { params: Promise<{ orderid: string }> }
+) {
     await connectToDatabase();
     try {
         const { orderid } = await params;

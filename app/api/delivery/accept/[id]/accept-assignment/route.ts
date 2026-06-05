@@ -4,13 +4,15 @@ import DeliveryAssignment from "@/app/model/deliveryassignment";
 import Order from "@/app/model/order.model";
 import { NextRequest, NextResponse } from "next/server";
 
-
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+    req: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
     
     try {
         await connectToDatabase();
         
-        const { id } =await params;
+        const { id } = await params;
         const session=await auth();
          const deliveryboyId= session?.user?.id;
          if(!deliveryboyId){

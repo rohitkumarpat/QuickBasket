@@ -6,7 +6,7 @@ import Storeprovide from "./redux/Storeprovide";
 import Usegetme from "./hook/Usegetme";
 import { Inituser } from "./Inituser";
 import CartLoader from "./Cartloader";
-
+import "leaflet/dist/leaflet.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

@@ -6,6 +6,7 @@ import { getsocket } from "../lib/socket";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 
+
 interface Assignment {
   _id: string;
 
@@ -27,6 +28,15 @@ interface Assignment {
 }
 
 
+import dynamic from "next/dynamic";
+
+const Livemap = dynamic(
+  () => import("@/app/component/Livemap"),
+  {
+    ssr: false,
+  }
+);
+
 function Deliveryboydashboard() {
 
   const [assignments, setAssignments] = useState<Assignment[]>([]);
@@ -34,6 +44,7 @@ function Deliveryboydashboard() {
   const [activeorder,setactiveorder]=useState<any>(null);
   const [location,setlocation]=useState<{latitude:number,longitude:number}|null>(null);
 
+const [deliverylocation,setdeliverylocation]=useState<{latitude:number,longitude:number}|null>(null);
 
 
   useEffect(() => {
@@ -149,6 +160,32 @@ function Deliveryboydashboard() {
   }, [user]);
 
 
+  useEffect(() => {
+    if (!user?._id) return;
+    const socket = getsocket();
+    socket.emit("identity", user._id);
+
+    if (!navigator.geolocation) return;
+
+    const watcher = navigator.geolocation.watchPosition(
+        (position) => {
+            const { latitude, longitude } = position.coords;
+            setdeliverylocation({ latitude, longitude });
+            socket.emit("updateLocation", { userId: user._id, latitude, longitude });
+        },
+        (error) => {
+            console.error("Error getting location:", {
+                code: error.code,
+                message: error.message
+            });
+        },
+        { enableHighAccuracy: true }
+    );
+
+    return () => navigator.geolocation.clearWatch(watcher);
+}, [user?._id] );
+
+
 if (activeorder && location){
   return (
     <div className="p-4 pt-[50px] min-h-screen bg-gray-50">
@@ -162,6 +199,7 @@ if (activeorder && location){
         </p>
 
         <div className="rounded-xl border shadow-lg overflow-hidden mb-6">
+          <Livemap location={location} deliverylocation={deliverylocation} />
         </div>
       </div>
     </div>

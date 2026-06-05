@@ -8,6 +8,7 @@ import { MapPinned, MoveLeft, User, Phone } from "lucide-react";
 import { getsocket } from "@/app/lib/socket";
 
 
+
 type OrderItem = {
   groceryId?: string;
   name: string;
@@ -84,6 +85,7 @@ export default function MyOrders() {
 }
 
 function OrderCard({ order }: { order: Order }) {
+  const router = useRouter();
 
   useEffect(() => {
     const socket = getsocket();
@@ -170,7 +172,8 @@ function OrderCard({ order }: { order: Order }) {
               </div>
             </div>
 
-            <button
+            <button 
+              onClick={() => router.push(`/frontend/user/track-order/${order.id}`)}
               className="flex items-center gap-2 bg-green-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-green-700">
               <MapPinned size={16} />
               Track

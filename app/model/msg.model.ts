@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-interface Imsg {
+export interface Imsg {
     _id:mongoose.Types.ObjectId;
     roomid:mongoose.Types.ObjectId;
     text:string;
@@ -11,7 +11,7 @@ interface Imsg {
 }
 
 const msgSchema = new mongoose.Schema<Imsg>({
-    roomid:{type:mongoose.Schema.Types.ObjectId,ref:"Chatroom",required:true},
+    roomid:{type:mongoose.Schema.Types.ObjectId,ref:"Order",required:true},
     text:{type:String,required:true},
     senderid:{type:mongoose.Schema.Types.ObjectId,ref:"User",required:true},
     time:{type:String,required:true},

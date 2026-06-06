@@ -8,6 +8,7 @@ import mongoose from "mongoose";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { getsocket } from "@/app/lib/socket";
+import Customerchat from "@/app/component/Customerchat";
 
 interface AssignedDeliveryBoy {
   _id: string;
@@ -203,13 +204,24 @@ export default function Trackorder({
           </div>
         </div>
 
-        <div className="flex justify-center mt-8">
-          <div className="w-full max-w-3xl overflow-hidden rounded-[32px] border bg-white shadow-lg">
+        <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.85fr)] lg:items-start">
+          <div className="overflow-hidden rounded-[32px] border bg-white shadow-lg">
             <Livemap
               location={location}
               deliverylocation={deliveryLocation}
             />
           </div>
+          {user?._id ? (
+            <div>
+              <h2 className="mb-3 text-xl font-bold text-green-700">
+                Chat with Delivery Boy
+              </h2>
+              <Customerchat
+                orderid={String(order._id)}
+                userid={String(user._id)}
+              />
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

@@ -37,6 +37,7 @@ interface NewDeliveryAssignmentPayload {
 
 
 import dynamic from "next/dynamic";
+import Deliverychat from "./Deliverychat";
 
 const Livemap = dynamic(
   () => import("@/app/component/Livemap"),
@@ -145,6 +146,7 @@ const [deliverylocation,setdeliverylocation]=useState<{latitude:number,longitude
 // };
 
 //fetch the current active assignment of delivery boy using axios and display it in the dashboard
+
  useEffect(() => {
 
     const fetchCurrentAssignment = async () => {
@@ -189,7 +191,7 @@ if (activeorder && location){
           }}
         />
       ) : null}
-      <div className="max-w-3xl mx-auto">
+      <div className="mx-auto max-w-6xl">
         <h1 className="text-2xl font-bold text-green-700 mb-2">
           Active Delivery
         </h1>
@@ -198,8 +200,21 @@ if (activeorder && location){
           order#{activeorder.orderId._id.slice(-6)}
         </p>
 
-        <div className="rounded-xl border shadow-lg overflow-hidden mb-6">
-          <Livemap location={location} deliverylocation={deliverylocation} />
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.85fr)] lg:items-start">
+          <div className="overflow-hidden rounded-xl border shadow-lg">
+            <Livemap location={location} deliverylocation={deliverylocation} />
+          </div>
+          {user?._id ? (
+            <div>
+              <h2 className="mb-3 text-xl font-bold text-green-700">
+                Chat with Customer
+              </h2>
+              <Deliverychat
+                orderid={String(activeorder.orderId._id)}
+                deliveryboyid={String(user._id)}
+              />
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

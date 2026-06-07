@@ -55,6 +55,38 @@ export default function MyOrders() {
     fetchOrders();
   }, []);
 
+
+
+
+
+ useEffect(() => {
+  const socket = getsocket();
+
+  socket.connect();
+  socket.on(
+    "order-assignment",
+    ({ orderId, assignmentdeliveryboyId }) => {
+      setOrders((prev) =>
+        prev.map((order) =>
+          order.id === orderId
+            ? {
+                ...order,
+                assignmentdeliveryboyId,
+              }
+            : order
+        )
+      );
+    }
+  );
+
+  return () => {
+    socket.off("order-assignment");
+  };
+}, []);
+
+
+
+
   if (loading) return <p className="text-center mt-10">Loading...</p>;
 
   return (

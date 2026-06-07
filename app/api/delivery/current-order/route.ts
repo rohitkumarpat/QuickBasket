@@ -24,17 +24,10 @@ export async function GET() {
             .lean();
 
 
-        if (!activeassignment) {
-            return NextResponse.json(
-                { active: false, message: "No active orders assigned" },
-                { status: 404 }
-            );
-        }
-
         if (activeassignment.length === 0) {
             return NextResponse.json(
                 { active: false, message: "No active orders assigned" },
-                { status: 404 }
+                { status: 200 }
             );
         }
 

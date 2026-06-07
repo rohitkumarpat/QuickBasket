@@ -29,6 +29,9 @@ export interface Order {
       assignment?: mongoose.Types.ObjectId | null;
     assignmentdeliveryboyId?: mongoose.Types.ObjectId | null;
     status: "pending" | "out-for-delivery" | "delivered" | "cancelled";
+    deliveryotp:string|null;
+    deliveryotpverfication:boolean;
+    deliveryat:Date|null;
     createdAt?: Date;
     updatedAt?: Date;
    
@@ -64,12 +67,19 @@ export interface Order {
                 latitude: { type: Number, required: true },
                 longitude: { type: Number, required: true },
             },
+
+
             
             assignment: { type: mongoose.Schema.Types.ObjectId, ref: "DeliveryAssignment", default: null },
 
             assignmentdeliveryboyId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
 
             status: { type: String, enum: ["pending", "out-for-delivery", "delivered", "cancelled"], default: "pending" },
+
+            deliveryotp: { type: String, default: null },
+            deliveryotpverfication: { type: Boolean, default: false },
+            deliveryat: { type: Date, default: null },
+            
         },
         { timestamps: true }
     );

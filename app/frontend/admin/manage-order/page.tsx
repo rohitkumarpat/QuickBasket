@@ -107,6 +107,44 @@ useEffect(() => {
   };
 }, []);
 
+
+
+useEffect(() => {
+  const socket = getsocket();
+
+  socket.connect();
+
+  const handleOrderAssignment = ({
+    orderId,
+    assignmentdeliveryboyId,
+  }: {
+    orderId: string;
+    assignmentdeliveryboyId: {
+      _id: string;
+      name: string;
+      mobile: string;
+      image?: string;
+    };
+  }) => {
+    setOrders((prev) =>
+      prev.map((order) =>
+        order._id === orderId
+          ? {
+              ...order,
+              assignmentdeliveryboyId,
+            }
+          : order
+      )
+    );
+  };
+
+  socket.on("order-assignment", handleOrderAssignment);
+
+  return () => {
+    socket.off("order-assignment", handleOrderAssignment);
+  };
+}, []);
+
     return (
         <div>
           <div className="flex items-center justify-center gap-3 p-4 border-b bg-white sticky top-0 z-10">

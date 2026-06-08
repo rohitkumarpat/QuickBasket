@@ -6,6 +6,8 @@ import Groceryitem from './Groceryitem';
 
 // 👇 IMPORT THIS
 import MotionWrapper from './MotionWrapper';
+import Footer from './Footer';
+
 
 async function Userdashboard({ query, }: {
   query?: string;
@@ -70,8 +72,11 @@ async function Userdashboard({ query, }: {
         </div>
 
       </MotionWrapper>
+      <Footer />
 
     </div>
+
+
   )
 }
 

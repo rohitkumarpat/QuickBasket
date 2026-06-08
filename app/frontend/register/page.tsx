@@ -1,12 +1,13 @@
-"use client"
+"use client";
 
-import RegisterForm from '@/app/component/RegisterForm';
-import Welcome from '@/app/component/Welcome'
-import React, { useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation';
+import RegisterForm from "@/app/component/RegisterForm";
+import Welcome from "@/app/component/Welcome";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
-function Register() {
+function RegisterContent() {
   const [steps, setsteps] = useState(1);
+
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -19,7 +20,7 @@ function Register() {
       setsteps(1);
       localStorage.setItem("step", "1");
     }
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     localStorage.setItem("step", steps.toString());
@@ -30,7 +31,13 @@ function Register() {
       {steps === 1 && <Welcome nextstep={setsteps} />}
       {steps === 2 && <RegisterForm nextstep={setsteps} />}
     </div>
-  )
+  );
 }
 
-export default Register
+export default function Register() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RegisterContent />
+    </Suspense>
+  );
+}

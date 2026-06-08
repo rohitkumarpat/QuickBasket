@@ -1,7 +1,6 @@
 import connectToDatabase from "@/app/lib/db";
 import DeliveryAssignment from "@/app/model/deliveryassignment";
 import Order from "@/app/model/order.model";
-import next from "next";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {

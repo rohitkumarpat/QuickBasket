@@ -1,6 +1,5 @@
 import connectToDatabase from "@/app/lib/db";
 import Order from "@/app/model/order.model";
-import { connect } from "http2";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 

@@ -11,8 +11,11 @@ import Delivery from "./component/Delivery";
 import Geoupdater from "./component/Geoupdater";
 
 
-export default async function Home() {
+export default async function Home({searchParams,}: {searchParams: Promise<{ q?: string }>; }) {
   await connectToDatabase();
+
+  const params = await searchParams;
+    const query = params.q || "";
 
   const session = await auth();
 
@@ -45,7 +48,7 @@ export default async function Home() {
 
       <Geoupdater userId={user._id} />
        
-      {user.role === "user" && <Userdashboard />}
+      {user.role === "user" && <Userdashboard query={query} />}
 
       {user.role === "deliveryboy" && <Delivery />}
 

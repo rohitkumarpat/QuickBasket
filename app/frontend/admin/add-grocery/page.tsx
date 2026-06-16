@@ -76,7 +76,7 @@ export default function AddGroceryPage() {
 };
 
 
-  // Handle image change
+
   const handleImageChange = (e: any) => {
     const file = e.target.files?.[0] || null;
 

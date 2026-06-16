@@ -19,6 +19,16 @@ export default function LoginForm() {
   const isValidGmail = /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email);
   const isDisabled = !email || !password || !isValidGmail || loading;
 
+
+  const { status } = useSession();
+
+    React.useEffect(() => {
+  if (status === "authenticated") {
+    router.replace("/");
+      }
+}, [status, router]);
+
+
   async function backfunction() {
     router.push("/frontend/register?step=2");
   }

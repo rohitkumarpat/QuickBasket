@@ -1,9 +1,9 @@
 import { get } from "http";
 import { getToken } from "next-auth/jwt";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 
-export async function proxy(req: Request) {
+export async function proxy(req: NextRequest) {
   const {pathname} = new URL(req.url);
    const publicRoutes = [
   "/api/auth",
@@ -37,7 +37,7 @@ if (pathname.startsWith("/frontend/delivery") && role !== "deliveryboy") {
   return NextResponse.redirect(new URL("/frontend/unauthorized", req.url));
 }
 
-if (pathname.startsWith("frontend/user") && role !== "user") {
+if (pathname.startsWith("/frontend/user") && role !== "user") {
   return NextResponse.redirect(new URL("/frontend/unauthorized", req.url));
 }
 

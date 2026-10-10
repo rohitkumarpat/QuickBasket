@@ -199,11 +199,6 @@ Leaflet Map
 Live Delivery Marker
 ```
 
-## 🤖 AI Integration
-
-QuickBasket includes an AI-powered chat feature using the **Google Gemini API**.
-
-The AI functionality is used for communication between customers and delivery partners, providing an integrated conversational experience inside the platform.
 
 ## 🛠️ Tech Stack
 
@@ -232,9 +227,6 @@ The AI functionality is used for communication between customers and delivery pa
 
 * NextAuth
 
-### AI
-
-* Google Gemini API
 
 ### Real-Time Communication
 
@@ -249,36 +241,6 @@ The AI functionality is used for communication between customers and delivery pa
 
 * Vercel
 
-## 📂 Project Structure
-
-```text
-QuickBasket/
-│
-├── app/
-│   ├── api/
-│   │   ├── admin/
-│   │   ├── delivery/
-│   │   ├── user/
-│   │   └── chat/
-│   │
-│   ├── component/
-│   ├── frontend/
-│   │   ├── admin/
-│   │   ├── delivery/
-│   │   └── user/
-│   │
-│   ├── lib/
-│   ├── model/
-│   └── ...
-│
-├── public/
-│
-├── socket-server/
-│
-├── package.json
-├── next.config.js
-└── README.md
-```
 
 ## 🔐 Environment Variables
 

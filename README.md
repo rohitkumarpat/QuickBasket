@@ -82,10 +82,7 @@ QuickBasket follows a **full-stack Next.js architecture** with MongoDB as the pr
 │   Live Maps      │
 └──────────────────┘
 
-             ┌─────────────────┐
-             │   Gemini API    │
-             │   AI Chat       │
-             └─────────────────┘
+
 ```
 
 ### Request Flow
